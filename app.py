@@ -11,14 +11,14 @@ from pymongo import MongoClient
 import certifi
 
 # Load environment variables
-load_dotenv()  # take environment variables from .env.
+load_dotenv()
 
 # Configure Google Generative AI
 genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 
 # MongoDB connection
 def connect_db():
-    uri = os.getenv("MONGODB_URI")  # Assuming MONGODB_URI is set in your .env file
+    uri = os.getenv("MONGODB_URI")
     client = MongoClient(uri, tlsCAFile=certifi.where())
     return client
 
@@ -100,8 +100,8 @@ with tab1:
 with tab2:
     st.markdown("<h3 style='color: #4CAF50;'>Skill gap finder:</h3>", unsafe_allow_html=True)
     uploaded_file = st.file_uploader("Upload Your Resume (PDF)...", type=["pdf"], help="Please upload the PDF")
-    scrape_skill = st.text_input("Enter Job title", key="skill", placeholder="Enter the Job title you wish to join...", help="Enter the skill you want to search for jobs")
-    scrape_location = st.text_input("Location", key="scrape_location", placeholder="Enter the location for job...", help="Enter the location for job search")
+    skill = st.text_input("Enter Job title", key="skill", placeholder="Enter the Job title you wish to join...", help="Enter the skill you want to search for jobs")
+    location = st.text_input("Location", key="skilllocation", placeholder="Enter the location for job...", help="Enter the location for job search")
 
     if uploaded_file is not None:
         st.write("PDF Uploaded Successfully")
@@ -111,9 +111,9 @@ with tab2:
     if submit:
         if uploaded_file is not None:
             text = input_pdf_text(uploaded_file)
-            if scrape_skill and scrape_location:
+            if skill and location:
                 with st.spinner("Fetching job data..."):
-                    job_data = fetch_jobs(skill_name=scrape_skill, location=scrape_location)
+                    job_data = fetch_jobs(skill_name=skill, location=location)
                     if job_data:
                         job_descriptions = "\n\n".join([job['Description'] for job in job_data])
                         response = get_gemini_response(input_prompt.format(text=text, jd=job_descriptions))
