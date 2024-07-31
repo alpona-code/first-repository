@@ -7,7 +7,7 @@ import textwrap
 from IPython.display import Markdown
 import json
 import urllib.parse
-from pymongo import MongoClient
+from pymongo import MongoClient, errors
 import certifi
 
 # Load environment variables
@@ -19,8 +19,19 @@ genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 # MongoDB connection
 def connect_db():
     uri = os.getenv("MONGODB_URI")
-    client = MongoClient(uri, tlsCAFile=certifi.where())
-    return client
+    if not uri:
+        st.error("MongoDB URI not found in environment variables.")
+        return None
+    try:
+        client = MongoClient(uri, tlsCAFile=certifi.where())
+        return client
+    except errors.ConfigurationError as e:
+        st.error(f"Configuration Error: {e}")
+    except errors.ConnectionError as e:
+        st.error(f"Connection Error: {e}")
+    except Exception as e:
+        st.error(f"Unexpected Error: {e}")
+    return None
 
 # Function to convert text to Markdown format
 def to_markdown(text):
@@ -41,22 +52,29 @@ def get_gemini_response(input, pdf_content=None, prompt=None):
 def input_pdf_text(uploaded_file):
     reader = pdf.PdfReader(uploaded_file)
     text = ""
-    for page in range(len(reader.pages)):
-        page = reader.pages[page]
-        text += str(page.extract_text())
+    for page in reader.pages:
+        text += page.extract_text()
     return text
 
 # Function to fetch job data from MongoDB
 def fetch_jobs(skill_name, location):
     client = connect_db()
-    db = client['job_database']
-    collection = db['jobs']
-    query = {
-        "Job Title": {"$regex": skill_name, "$options": "i"},
-        "Location": {"$regex": location, "$options": "i"}
-    }
-    jobs = list(collection.find(query))
-    return jobs
+    if not client:
+        return []
+    try:
+        db = client['job_database']
+        collection = db['jobs']
+        query = {
+            "Job Title": {"$regex": skill_name, "$options": "i"},
+            "Location": {"$regex": location, "$options": "i"}
+        }
+        jobs = list(collection.find(query))
+        return jobs
+    except errors.PyMongoError as e:
+        st.error(f"Error fetching job data: {e}")
+    except Exception as e:
+        st.error(f"Unexpected Error: {e}")
+    return []
 
 # Prompt Template
 input_prompt = """
@@ -101,15 +119,15 @@ with tab2:
     st.markdown("<h3 style='color: #4CAF50;'>Skill gap finder:</h3>", unsafe_allow_html=True)
     uploaded_file = st.file_uploader("Upload Your Resume (PDF)...", type=["pdf"], help="Please upload the PDF")
     skill = st.text_input("Enter Job title", key="skill", placeholder="Enter the Job title you wish to join...", help="Enter the skill you want to search for jobs")
-    location = st.text_input("Location", key="skilllocation", placeholder="Enter the location for job...", help="Enter the location for job search")
+    location = st.text_input("Location", key="location", placeholder="Enter the location for job...", help="Enter the location for job search")
 
-    if uploaded_file is not None:
+    if uploaded_file:
         st.write("PDF Uploaded Successfully")
 
     submit = st.button("Submit")
 
     if submit:
-        if uploaded_file is not None:
+        if uploaded_file:
             text = input_pdf_text(uploaded_file)
             if skill and location:
                 with st.spinner("Fetching job data..."):
