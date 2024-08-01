@@ -85,7 +85,7 @@ resume:{text}
 description:{jd}
 
 I want the response in two seperate paragraphs one for MissingKeywords and another one for Profile Summary
-{{"MissingKeywords:[]"},{"Profile Summary":""}}
+{{"MissingKeywords:[]","Profile Summary":""}}
 """
 
 # Streamlit UI
