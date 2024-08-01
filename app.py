@@ -85,7 +85,8 @@ resume:{text}
 description:{jd}
 
 I want the response in one single string having the structure
-{{"MissingSkills:[]",/n"Profile Summary":""}}
+{{"MissingSkills:[]",
+"Profile Summary":""}}
 """
 
 # Streamlit UI
