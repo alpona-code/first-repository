@@ -85,7 +85,7 @@ resume:{text}
 description:{jd}
 
 I want the response in two seperate strings one for MissingKeywords and another one for Profile Summary
-{{"MissingSkills:[]"}}
+{{"Profile Summary":""}}
 """
 
 # Streamlit UI
