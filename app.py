@@ -84,10 +84,8 @@ the missing keywords with high accuracy
 resume:{text}
 description:{jd}
 
-I want the response in one single string having the structure
-{"MissingKeywords:[]"}
-I want the response in one single string having the structure
-{"Profile Summary":""}
+I want the response in two seperate paragraphs one for MissingKeywords and another one for Profile Summary
+{{"MissingKeywords:[]"},{"Profile Summary":""}}
 """
 
 # Streamlit UI
