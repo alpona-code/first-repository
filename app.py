@@ -4,7 +4,6 @@ import os
 import PyPDF2 as pdf
 from dotenv import load_dotenv
 import textwrap
-from IPython.display import Markdown
 import json
 import urllib.parse
 from pymongo import MongoClient, errors
@@ -29,14 +28,11 @@ def connect_db():
         st.error(f"Configuration Error: {e}")
     except errors.ConnectionError as e:
         st.error(f"Connection Error: {e}")
+    except errors.OperationFailure as e:
+        st.error(f"Operation Failure: {e}")
     except Exception as e:
         st.error(f"Unexpected Error: {e}")
     return None
-
-# Function to convert text to Markdown format
-def to_markdown(text):
-    text = text.replace('•', '  *')
-    return Markdown(textwrap.indent(text, '> ', predicate=lambda _: True))
 
 # Function to get response from Gemini model
 def get_gemini_response(input, pdf_content=None, prompt=None):
@@ -65,9 +61,9 @@ def fetch_jobs(skill_name, location):
         db = client['job_database']
         collection = db['jobs']
         query = {
-            "Job Title": {"$regex": skill_name, "$options": "i"},
-            "Location": {"$regex": location, "$options": "i"}
+            "Job Title": {"$regex": skill_name, "$options": "i"}
         }
+        print(query)
         jobs = list(collection.find(query))
         return jobs
     except errors.PyMongoError as e:
@@ -138,15 +134,14 @@ with tab2:
                         response_data = json.loads(response)
                         missing_keywords = response_data.get("MissingKeywords", [])
                         if missing_keywords:
-                            coursera_url1 = f"https://www.coursera.org/search?query={urllib.parse.quote_plus(missing_keywords[0])}"
-                            udemy_url1 = f"https://www.udemy.com/courses/search/?src=ukw&q={urllib.parse.quote_plus(missing_keywords[0])}"
-                            coursera_url2 = f"https://www.coursera.org/search?query={urllib.parse.quote_plus(missing_keywords[1])}" if len(missing_keywords) > 1 else ""
-                            udemy_url2 = f"https://www.udemy.com/courses/search/?src=ukw&q={urllib.parse.quote_plus(missing_keywords[1])}" if len(missing_keywords) > 1 else ""
+                            coursera_urls = [f"https://www.coursera.org/search?query={urllib.parse.quote_plus(keyword)}" for keyword in missing_keywords]
+                            udemy_urls = [f"https://www.udemy.com/courses/search/?src=ukw&q={urllib.parse.quote_plus(keyword)}" for keyword in missing_keywords]
                             st.subheader("The response is")
                             st.write(response)
                             st.subheader("To learn a missing skill")  
-                            st.write(f"Coursera:\n{coursera_url1}\n{coursera_url2}")
-                            st.write(f"Udemy:\n{udemy_url1}\n{udemy_url2}") 
+                            for i in range(len(missing_keywords)):
+                                st.write(f"Coursera: {coursera_urls[i]}")
+                                st.write(f"Udemy: {udemy_urls[i]}")
                         else:
                             st.write("No missing keywords found.")
                     else:
