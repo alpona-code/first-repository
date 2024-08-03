@@ -90,7 +90,7 @@ I want the response in one single string having the structure
  
 # Streamlit UI
 st.set_page_config(
-    page_title="Q&A Demo and ATS Resume Expert",
+    page_title="Conversational AI for tailored educational pathways",
     page_icon="🌟",
     layout="centered",
     initial_sidebar_state="auto"
@@ -98,7 +98,7 @@ st.set_page_config(
  
 st.markdown("<h1 style='text-align: center; color: #4CAF50;'>Conversational AI for Tailored Educational Pathways</h1>", unsafe_allow_html=True)
  
-tab1, tab2 = st.tabs(["Q&A Chatbot", "ATS Resume Expert"])
+tab1, tab2 = st.tabs(["AI Chatbot", "ATS Resume Expert"])
  
 with tab1:
     st.markdown("<h3 style='color: #4CAF50;'>Ask your question:</h3>", unsafe_allow_html=True)
@@ -135,7 +135,7 @@ with tab1:
     with chat_container:
         for chat in st.session_state.chat_history:
             st.markdown(f"**You:** {chat['question']}")
-            st.markdown(f"**Gemini:** {chat['response']}")
+            st.markdown(f"**AI Chatbot:** {chat['response']}")
  
     # Form for user input at the bottom
     st.markdown('<div class="fixed-bottom-input">', unsafe_allow_html=True)
