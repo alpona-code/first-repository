@@ -142,7 +142,7 @@ with tab1:
     st.markdown('<div class="fixed-bottom-input">', unsafe_allow_html=True)
     with st.form(key="chat_form", clear_on_submit=True):
         input_text = st.text_input("", key="input", placeholder="Type your question here...", help="Enter the question you want to ask Gemini")
-        submit = st.form_submit_button("Ask the Question")
+        submit = st.form_submit_button("Ask Question")
     st.markdown('</div>', unsafe_allow_html=True)
 
     if submit and input_text:
