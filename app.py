@@ -242,7 +242,9 @@ with tab3:
                             cosine_similarities = cosine_similarity(tfidf_matrix[0:1], tfidf_matrix[1:]).flatten()
                             job_listings['similarity'] = cosine_similarities
                             top_matches = job_listings.sort_values(by='similarity', ascending=False).head(5)
-                            st.write(top_matches[['Job ID', 'Job Title', 'Company', 'Link']])
+                            # Make links clickable
+                            top_matches['Link'] = top_matches['Link'].apply(lambda x: f'<a href="{x}" target="_blank">{x}</a>')
+                            st.write(top_matches[['Job ID', 'Job Title', 'Company', 'Link']].to_html(escape=False, index=False), unsafe_allow_html=True)
                     except errors.PyMongoError as e:
                         st.error(f"Error fetching job data: {e}")
                     except Exception as e:
