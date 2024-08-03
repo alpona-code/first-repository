@@ -157,11 +157,6 @@ with tab1:
                 st.markdown(f"**You:** {chat['question']}")
                 st.markdown(f"**Gemini:** {chat['response']}")
 
-    # Optional: Clear chat history
-    if st.button("Clear Chat History"):
-        st.session_state.chat_history = []
-        chat_container.empty()
-
 
 
 
