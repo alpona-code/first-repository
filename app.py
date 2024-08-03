@@ -8,6 +8,9 @@ import json
 import urllib.parse
 from pymongo import MongoClient, errors
 import certifi
+import pandas as pd
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
 
 # Load environment variables
 load_dotenv()
@@ -72,6 +75,29 @@ def fetch_jobs(skill_name, location):
         st.error(f"Unexpected Error: {e}")
     return []
 
+# Function to extract text from PDF for Job Recommendation
+def extract_text_from_pdf(file):
+    reader = pdf.PdfReader(file)
+    text = ""
+    for page in reader.pages:
+        text += page.extract_text()
+    return text
+
+# Function to match keywords in the extracted text
+def match_keywords(text, keywords):
+    found_keywords = []
+    for keyword in keywords:
+        if re.search(rf'\b{keyword}\b', text, re.IGNORECASE):
+            found_keywords.append(keyword)
+    return found_keywords
+
+# Load the skills data from CSV
+skills_df = pd.read_csv('skills_en.csv')  # Replace with the actual path to your CSV file
+skills = skills_df['skills'].tolist()
+
+# Load the job listings data from CSV
+job_listings = pd.read_csv('jobs_sample.csv')  # Replace with the actual path to your CSV file
+
 # Prompt Template
 input_prompt = """
 Hey Act Like a skilled or very experienced ATS(Application Tracking System)
@@ -98,7 +124,7 @@ st.set_page_config(
 
 st.markdown("<h1 style='text-align: center; color: #4CAF50;'>Conversational AI for Tailored Educational Pathways</h1>", unsafe_allow_html=True)
 
-tab1, tab2 = st.tabs(["Q&A Chatbot", "ATS Resume Expert"])
+tab1, tab2, tab3 = st.tabs(["Q&A Chatbot", "ATS Resume Expert", "Job Recommendation"])
 
 with tab1:
     st.markdown("<h3 style='color: #4CAF50;'>Ask your question:</h3>", unsafe_allow_html=True)
@@ -157,9 +183,6 @@ with tab1:
                 st.markdown(f"**You:** {chat['question']}")
                 st.markdown(f"**Gemini:** {chat['response']}")
 
-
-
-
 with tab2:
     st.markdown("<h3 style='color: #4CAF50;'>Skill gap finder:</h3>", unsafe_allow_html=True)
     uploaded_file = st.file_uploader("Upload Your Resume (PDF)...", type=["pdf"], help="Please upload the PDF")
@@ -199,6 +222,37 @@ with tab2:
                 st.write("Please enter the skill and location for job search")
         else:
             st.write("Please upload the resume")
+
+with tab3:
+    st.markdown("<h3 style='color: #4CAF50;'>Job Recommendation:</h3>", unsafe_allow_html=True)
+    uploaded_file_job = st.file_uploader("Upload Your Resume (PDF) for Job Matching...", type=["pdf"], help="Please upload the PDF")
+    
+    if uploaded_file_job:
+        st.write("PDF Uploaded Successfully")
+
+    submit_job = st.button("Get Job Recommendations")
+
+    if submit_job and uploaded_file_job:
+        with st.spinner("Processing resume and matching jobs..."):
+            extracted_text = extract_text_from_pdf(uploaded_file_job)
+            matched_keywords = match_keywords(extracted_text, skills)
+            
+            if not matched_keywords:
+                st.write("No matching keywords found in the resume.")
+            else:
+                resume_text = ' '.join(matched_keywords)
+                job_descriptions = job_listings['Job Description'].tolist()
+                texts = [resume_text] + job_descriptions
+                
+                vectorizer = TfidfVectorizer()
+                tfidf_matrix = vectorizer.fit_transform(texts)
+                cosine_similarities = cosine_similarity(tfidf_matrix[0:1], tfidf_matrix[1:]).flatten()
+                
+                job_listings['similarity'] = cosine_similarities
+                top_matches = job_listings.sort_values(by='similarity', ascending=False).head(5)
+                
+                st.subheader("Top 5 Job Recommendations")
+                st.write(top_matches[['Job Id', 'Job Title', 'similarity']])
 
 st.sidebar.title("Project Overview")
 st.sidebar.info("""
