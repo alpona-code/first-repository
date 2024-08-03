@@ -102,14 +102,28 @@ tab1, tab2 = st.tabs(["Q&A Chatbot", "ATS Resume Expert"])
 
 with tab1:
     st.markdown("<h3 style='color: #4CAF50;'>Ask your question:</h3>", unsafe_allow_html=True)
+    
+    # Initialize chat history in session state
+    if 'chat_history' not in st.session_state:
+        st.session_state.chat_history = []
+
     input_text = st.text_input("", key="input", placeholder="Type your question here...", help="Enter the question you want to ask Gemini")
     submit = st.button("Ask the Question")
 
-    if submit:
+    if submit and input_text:
         with st.spinner("Generating response..."):
             response = get_gemini_response(input_text)
-        st.markdown("<h2 style='color: #4CAF50;'>The Response:</h2>", unsafe_allow_html=True)
-        st.success(response)
+        st.session_state.chat_history.append({"question": input_text, "response": response})
+    
+    # Display chat history
+    for chat in st.session_state.chat_history:
+        st.markdown(f"**You:** {chat['question']}")
+        st.markdown(f"**Gemini:** {chat['response']}")
+
+    # Optional: Clear chat history
+    if st.button("Clear Chat History"):
+        st.session_state.chat_history = []
+
 
 with tab2:
     st.markdown("<h3 style='color: #4CAF50;'>Skill gap finder:</h3>", unsafe_allow_html=True)
