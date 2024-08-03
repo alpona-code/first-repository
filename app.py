@@ -103,6 +103,30 @@ tab1, tab2 = st.tabs(["Q&A Chatbot", "ATS Resume Expert"])
 with tab1:
     st.markdown("<h3 style='color: #4CAF50;'>Ask your question:</h3>", unsafe_allow_html=True)
     
+    # Add custom CSS to fix the input box at the bottom
+    st.markdown("""
+        <style>
+        .fixed-bottom-input {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: white;
+            padding: 10px;
+            box-shadow: 0px -2px 5px rgba(0,0,0,0.1);
+        }
+        .fixed-bottom-input form {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+        }
+        .fixed-bottom-input input[type="text"] {
+            flex-grow: 1;
+            margin-right: 10px;
+        }
+        </style>
+        """, unsafe_allow_html=True)
+
     # Initialize chat history in session state
     if 'chat_history' not in st.session_state:
         st.session_state.chat_history = []
@@ -113,11 +137,13 @@ with tab1:
         for chat in st.session_state.chat_history:
             st.markdown(f"**You:** {chat['question']}")
             st.markdown(f"**Gemini:** {chat['response']}")
-    
+
     # Form for user input at the bottom
+    st.markdown('<div class="fixed-bottom-input">', unsafe_allow_html=True)
     with st.form(key="chat_form", clear_on_submit=True):
         input_text = st.text_input("", key="input", placeholder="Type your question here...", help="Enter the question you want to ask Gemini")
         submit = st.form_submit_button("Ask the Question")
+    st.markdown('</div>', unsafe_allow_html=True)
 
     if submit and input_text:
         with st.spinner("Generating response..."):
