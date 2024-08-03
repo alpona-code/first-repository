@@ -153,7 +153,7 @@ with tab1:
         with chat_container:
             for chat in st.session_state.chat_history:
                 st.markdown(f"**You:** {chat['question']}")
-                st.markdown(f"**Gemini:** {chat['response']}")
+                st.markdown(f"**AI Chatbot:** {chat['response']}")
  
  
  
