@@ -107,22 +107,35 @@ with tab1:
     if 'chat_history' not in st.session_state:
         st.session_state.chat_history = []
 
-    input_text = st.text_input("", key="input", placeholder="Type your question here...", help="Enter the question you want to ask Gemini")
-    submit = st.button("Ask the Question")
+    # Display chat history
+    chat_container = st.container()
+    with chat_container:
+        for chat in st.session_state.chat_history:
+            st.markdown(f"**You:** {chat['question']}")
+            st.markdown(f"**Gemini:** {chat['response']}")
+    
+    # Form for user input at the bottom
+    with st.form(key="chat_form", clear_on_submit=True):
+        input_text = st.text_input("", key="input", placeholder="Type your question here...", help="Enter the question you want to ask Gemini")
+        submit = st.form_submit_button("Ask the Question")
 
     if submit and input_text:
         with st.spinner("Generating response..."):
             response = get_gemini_response(input_text)
         st.session_state.chat_history.append({"question": input_text, "response": response})
-    
-    # Display chat history
-    for chat in st.session_state.chat_history:
-        st.markdown(f"**You:** {chat['question']}")
-        st.markdown(f"**Gemini:** {chat['response']}")
+        
+        # Clear chat container and re-display updated chat history
+        chat_container.empty()
+        with chat_container:
+            for chat in st.session_state.chat_history:
+                st.markdown(f"**You:** {chat['question']}")
+                st.markdown(f"**Gemini:** {chat['response']}")
 
     # Optional: Clear chat history
     if st.button("Clear Chat History"):
         st.session_state.chat_history = []
+        chat_container.empty()
+
 
 
 
