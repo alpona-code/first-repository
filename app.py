@@ -107,14 +107,6 @@ with tab1:
     if 'chat_history' not in st.session_state:
         st.session_state.chat_history = []
 
-    # Display chat history
-    if st.session_state.chat_history:
-        for chat in st.session_state.chat_history:
-            st.markdown(f"**You:** {chat['question']}")
-            st.markdown(f"**Gemini:** {chat['response']}")
-    else:
-        st.write("No chat history yet. Start asking questions!")
-
     input_text = st.text_input("", key="input", placeholder="Type your question here...", help="Enter the question you want to ask Gemini")
     submit = st.button("Ask the Question")
 
@@ -122,12 +114,15 @@ with tab1:
         with st.spinner("Generating response..."):
             response = get_gemini_response(input_text)
         st.session_state.chat_history.append({"question": input_text, "response": response})
-        st.experimental_rerun()  # This will reload the script and display the updated chat history
+    
+    # Display chat history
+    for chat in st.session_state.chat_history:
+        st.markdown(f"**You:** {chat['question']}")
+        st.markdown(f"**Gemini:** {chat['response']}")
 
     # Optional: Clear chat history
     if st.button("Clear Chat History"):
         st.session_state.chat_history = []
-        st.experimental_rerun()  # Rerun to clear the chat display
 
 
 
