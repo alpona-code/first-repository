@@ -12,7 +12,6 @@ import re
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
-import time
 
 # Load environment variables
 load_dotenv()
@@ -39,23 +38,15 @@ def connect_db():
         st.error(f"Unexpected Error: {e}")
     return None
 
-# Function to get response from Gemini model with retry logic
+# Function to get response from Gemini model
 def get_gemini_response(input, pdf_content=None, prompt=None):
-    try:
-        if pdf_content:
-            model = genai.GenerativeModel('gemini-pro-vision')
-            response = model.generate_content([input, pdf_content[0], prompt])
-        else:
-            model = genai.GenerativeModel('gemini-pro')
-            response = model.generate_content(input)
-        return response.text
-    except google.api_core.exceptions.ResourceExhausted as e:
-        st.warning("Resource exhausted, retrying in 5 seconds...")
-        time.sleep(5)
-        return get_gemini_response(input, pdf_content, prompt)
-    except Exception as e:
-        st.error(f"Error generating response: {e}")
-        return None
+    if pdf_content:
+        model = genai.GenerativeModel('gemini-pro-vision')
+        response = model.generate_content([input, pdf_content[0], prompt])
+    else:
+        model = genai.GenerativeModel('gemini-pro')
+        response = model.generate_content(input)
+    return response.text
 
 # Function to extract text from PDF
 def input_pdf_text(uploaded_file):
@@ -172,8 +163,7 @@ with tab1:
     if submit and input_text:
         with st.spinner("Generating response..."):
             response = get_gemini_response(input_text)
-        if response:
-            st.session_state.chat_history.append({"question": input_text, "response": response})
+        st.session_state.chat_history.append({"question": input_text, "response": response})
 
         # Clear chat container and re-display updated chat history
         chat_container.empty()
@@ -199,22 +189,19 @@ with tab2:
                     if job_data:
                         job_descriptions = "\n\n".join([job['Description'] for job in job_data])
                         response = get_gemini_response(input_prompt.format(text=text, jd=job_descriptions))
-                        if response:
-                            response_data = json.loads(response)
-                            missing_keywords = response_data.get("MissingKeywords", [])
-                            if missing_keywords:
-                                coursera_urls = [f"https://www.coursera.org/search?query={urllib.parse.quote_plus(keyword)}" for keyword in missing_keywords]
-                                udemy_urls = [f"https://www.udemy.com/courses/search/?src=ukw&q={urllib.parse.quote_plus(keyword)}" for keyword in missing_keywords]
-                                st.subheader("The response is")
-                                st.write(response)
-                                st.subheader("To learn a missing skill")  
-                                for i in range(len(missing_keywords)):
-                                    st.write(f"Coursera: {coursera_urls[i]}")
-                                    st.write(f"Udemy: {udemy_urls[i]}")
-                            else:
-                                st.write("No missing keywords found.")
+                        response_data = json.loads(response)
+                        missing_keywords = response_data.get("MissingKeywords", [])
+                        if missing_keywords:
+                            coursera_urls = [f"https://www.coursera.org/search?query={urllib.parse.quote_plus(keyword)}" for keyword in missing_keywords]
+                            udemy_urls = [f"https://www.udemy.com/courses/search/?src=ukw&q={urllib.parse.quote_plus(keyword)}" for keyword in missing_keywords]
+                            st.subheader("The response is")
+                            st.write(response)
+                            st.subheader("To learn a missing skill")  
+                            for i in range(len(missing_keywords)):
+                                st.write(f"Coursera: {coursera_urls[i]}")
+                                st.write(f"Udemy: {udemy_urls[i]}")
                         else:
-                            st.write("Error generating response from the AI model.")
+                            st.write("No missing keywords found.")
                     else:
                         st.write("No job data found matching the criteria.")
             else:
