@@ -63,7 +63,7 @@ def fetch_jobs(skill_name, location):
         return []
     try:
         db = client['job_database']
-        collection = db['Job_Listings']
+        collection = db['jobs']
         query = {
             "Job Title": {"$regex": skill_name, "$options": "i"}
         }
