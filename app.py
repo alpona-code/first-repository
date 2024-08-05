@@ -173,7 +173,7 @@ with tab1:
                 st.markdown(f"**AI Chatbot:** {chat['response']}")
 
 with tab2:
-    st.markdown("<h3 style='color: #4CAF50;'>Skill gap finder:</h3>", unsafe_allow_html=True)
+    st.markdown("<h3 style='color: #4CAF50;'>Skill gap finder/Course recommendation:</h3>", unsafe_allow_html=True)
     uploaded_file = st.file_uploader("Upload Your Resume (PDF)...", type=["pdf"], help="Please upload the PDF")
     skill = st.text_input("Enter Job title", key="skill", placeholder="Enter the Job title you wish to join...", help="Enter the skill you want to search for jobs")
     location = st.text_input("Location", key="location", placeholder="Enter the location for job...", help="Enter the location for job search")
